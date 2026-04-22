@@ -1,0 +1,14 @@
+2026-04-21 21:07:44 [error]: TypeError: Cannot read properties of null (reading '_id')
+    at C:\Users\subha\OneDrive\Desktop\EBMS2\backend\src\controllers\transactionController.js:182:57
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-04-22 02:49:23 [error]: ValidationError: Invoice validation failed: supplier: Cast to ObjectId failed for value "23" (type string) at path "supplier" because of "BSONError"
+    at Document.invalidate (C:\Users\subha\OneDrive\Desktop\EBMS2\backend\node_modules\mongoose\lib\document.js:3381:32)
+    at model.$set (C:\Users\subha\OneDrive\Desktop\EBMS2\backend\node_modules\mongoose\lib\document.js:1498:12)
+    at model.$set (C:\Users\subha\OneDrive\Desktop\EBMS2\backend\node_modules\mongoose\lib\document.js:1150:16)
+    at model.Document (C:\Users\subha\OneDrive\Desktop\EBMS2\backend\node_modules\mongoose\lib\document.js:180:12)
+    at model.Model (C:\Users\subha\OneDrive\Desktop\EBMS2\backend\node_modules\mongoose\lib\model.js:127:12)
+    at new model (C:\Users\subha\OneDrive\Desktop\EBMS2\backend\node_modules\mongoose\lib\model.js:4866:15)
+    at C:\Users\subha\OneDrive\Desktop\EBMS2\backend\node_modules\mongoose\lib\model.js:2791:20
+    at Array.map (<anonymous>)
+    at Function.create (C:\Users\subha\OneDrive\Desktop\EBMS2\backend\node_modules\mongoose\lib\model.js:2779:34)
+    at C:\Users\subha\OneDrive\Desktop\EBMS2\backend\src\controllers\procurementController.js:139:33
