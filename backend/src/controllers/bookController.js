@@ -82,7 +82,28 @@ const createBook = asyncHandler(async (req, res) => {
     bookData.coverImagePublicId = req.file.filename;
   }
 
+  // Handle copies if provided in body (convert to number)
+  const totalCopiesRequested = parseInt(req.body.totalCopies) || 0;
+  bookData.totalCopies = totalCopiesRequested;
+  bookData.availableCopies = totalCopiesRequested;
+
   const book = await Book.create(bookData);
+
+  // Create initial copies if requested
+  if (totalCopiesRequested > 0) {
+    const copies = [];
+    for (let i = 1; i <= totalCopiesRequested; i++) {
+      copies.push({
+        book: book._id,
+        copyNumber: `${book.isbn || book._id.toString().slice(-6)}-${String(i).padStart(3, '0')}`,
+        condition: i === 1 ? 'new' : 'good',
+        status: 'available',
+        location: book.location || 'Unassigned',
+      });
+    }
+    await BookCopy.insertMany(copies);
+  }
+
   return ApiResponse.created(res, book, 'Book created successfully');
 });
 

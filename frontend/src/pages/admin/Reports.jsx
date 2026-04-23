@@ -417,22 +417,47 @@ export default function AdminReports() {
 
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
-          body { background: white !important; color: black !important; font-family: 'Inter', sans-serif !important; }
-          .no-print { display: none !important; }
-          #app-sidebar, #app-navbar { display: none !important; }
-          .main-content { margin-left: 0 !important; padding: 0 !important; }
+          /* Hide UI elements */
+          aside, header, nav, .no-print, button, .flex-none, footer { display: none !important; }
+          
+          /* Layout adjustments */
+          body, html { background: white !important; color: black !important; height: auto !important; overflow: visible !important; }
+          .flex.h-screen { height: auto !important; display: block !important; overflow: visible !important; }
+          .main-content, main, .max-w-\\[1400px\\] { 
+            margin: 0 !important; 
+            padding: 0 !important; 
+            width: 100% !important; 
+            max-width: none !important; 
+            overflow: visible !important;
+            height: auto !important;
+          }
+
           .printable-content { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
-          .admin-card { background: white !important; border: 1px solid #eee !important; box-shadow: none !important; color: black !important; padding: 15px !important; margin-bottom: 20px !important; }
-          .table-wrapper { box-shadow: none !important; overflow: visible !important; }
+          
+          /* Component adjustments */
+          .admin-card { 
+            background: white !important; 
+            border: 1px solid #ddd !important; 
+            box-shadow: none !important; 
+            color: black !important; 
+            padding: 20px !important; 
+            margin-bottom: 20px !important; 
+            page-break-inside: avoid;
+          }
+          
           .table { border-collapse: collapse !important; border: 1px solid #ddd !important; width: 100% !important; }
-          .table th { background: #f3f4f6 !important; color: black !important; border: 1px solid #ddd !important; padding: 10px !important; text-transform: uppercase; font-size: 10px; }
+          .table th { background: #f8fafc !important; color: black !important; border: 1px solid #ddd !important; padding: 10px !important; text-transform: uppercase; font-size: 10px; }
           .table td { border: 1px solid #ddd !important; color: black !important; padding: 10px !important; font-size: 11px; }
-          .text-white, .text-slate-300, .text-primary-400 { color: black !important; }
-          .text-slate-500, .text-slate-600 { color: #666 !important; }
-          .bg-surface-700, .bg-surface-800, .bg-surface-900 { background: white !important; }
-          .badge-danger { border: 1px solid red !important; color: red !important; background: transparent !important; padding: 2px 6px !important; font-weight: bold !important; }
-          .badge-info, .badge-purple { border: 1px solid blue !important; color: blue !important; background: transparent !important; }
-          @page { size: portrait; margin: 15mm; }
+          
+          .text-white, .text-slate-300, .text-primary-400, .text-violet-400, .text-amber-400, .text-emerald-400 { color: black !important; }
+          .text-slate-500, .text-slate-600 { color: #64748b !important; }
+          
+          /* Charts/Bars in print */
+          .bg-surface-900, .bg-surface-800, .bg-surface-700 { background: #f1f5f9 !important; border: 1px solid #e2e8f0 !important; }
+          .h-3.rounded-full { background: #f1f5f9 !important; border: 1px solid #e2e8f0 !important; }
+          .bg-gradient-to-r { background: #64748b !important; } /* Use solid color for bars in print */
+
+          @page { size: portrait; margin: 10mm; }
           .hidden.print\\:block { display: block !important; }
         }
       `}} />

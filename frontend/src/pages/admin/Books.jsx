@@ -34,8 +34,10 @@ export default function AdminBooks() {
   const [form, setForm] = useState({
     title: '', author: '', isbn: '', publisher: '', publishedYear: '',
     category: '', description: '', pages: '', language: 'English',
-    type: 'physical', location: '',
+    type: 'physical', location: '', totalCopies: 1,
   });
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
 
   const fetchBooks = useCallback(async (page = 1) => {
     setLoading(true);
@@ -69,23 +71,42 @@ export default function AdminBooks() {
       category: book.category, description: book.description || '',
       pages: book.pages || '', language: book.language || 'English',
       type: book.type || 'physical', location: book.location || '',
+      totalCopies: book.totalCopies || 0,
     } : {
       title: '', author: '', isbn: '', publisher: '', publishedYear: '',
       category: '', description: '', pages: '', language: 'English',
-      type: 'physical', location: '',
+      type: 'physical', location: '', totalCopies: 1,
     });
+    setImage(null);
+    setImagePreview(book?.coverImage || '');
     setShowModal(true);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result);
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     try {
+      const formData = new FormData();
+      Object.keys(form).forEach(key => {
+        if (form[key]) formData.append(key, form[key]);
+      });
+      if (image) formData.append('coverImage', image);
+
       if (editBook) {
-        await api.put(`/books/${editBook._id}`, form);
+        await api.put(`/books/${editBook._id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
         toast.success('Book updated successfully');
       } else {
-        await api.post('/books', form);
+        await api.post('/books', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
         toast.success('Book created successfully');
       }
       setShowModal(false);
@@ -279,7 +300,33 @@ export default function AdminBooks() {
               </select>
             </div>
           </div>
-          <Input label="Shelf Location" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} />
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="Shelf Location" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} />
+            {!editBook && (
+              <Input label="Number of Copies *" type="number" min="1" value={form.totalCopies} onChange={e => setForm(f => ({ ...f, totalCopies: e.target.value }))} required />
+            )}
+          </div>
+          <div className="space-y-2">
+            <label className="label">Cover Image</label>
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-28 rounded-xl bg-surface-700 border border-surface-600 flex items-center justify-center overflow-hidden flex-shrink-0">
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <BookOpen className="w-8 h-8 text-slate-500" />
+                )}
+              </div>
+              <div className="flex-1">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="block w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-violet-500/10 file:text-violet-400 hover:file:bg-violet-500/20"
+                />
+                <p className="text-[10px] text-slate-500 mt-2">JPG, PNG or WEBP. Recommended size: 400x600px.</p>
+              </div>
+            </div>
+          </div>
           <div>
             <label className="label">Description</label>
             <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="input-field h-24 resize-none" placeholder="Add a brief description..." />

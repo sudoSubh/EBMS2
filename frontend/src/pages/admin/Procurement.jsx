@@ -56,14 +56,38 @@ function SearchSelect({ placeholder, onSearch, renderItem, onSelect, selected, r
       ) : (
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder={placeholder} className="input-field pl-9" />
-          {open && results.length > 0 && (
-            <div className="absolute top-full mt-1 left-0 right-0 bg-surface-800 border border-surface-600 rounded-xl max-h-56 overflow-y-auto">
-              {results.map((item) => (
-                <button key={item._id} type="button" onClick={() => { onSelect(item); setQuery(''); setOpen(false); }} className="w-full text-left px-4 py-3 hover:bg-surface-700 border-b border-surface-700 last:border-0">
-                  {renderItem(item)}
-                </button>
-              ))}
+          <input 
+            type="text" 
+            value={query} 
+            onChange={e => setQuery(e.target.value)} 
+            onFocus={() => { if (results.length > 0) setOpen(true); }}
+            placeholder={placeholder} 
+            className="input-field pl-9" 
+          />
+          {loading && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="w-4 h-4 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin"></div>
+            </div>
+          )}
+          {open && (
+            <div className="absolute top-full mt-1 left-0 right-0 bg-surface-800 border border-surface-600 rounded-xl max-h-56 overflow-y-auto shadow-2xl z-[100]">
+              {results.length > 0 ? (
+                results.map((item) => (
+                  <button 
+                    key={item._id} 
+                    type="button" 
+                    onClick={() => { onSelect(item); setQuery(''); setOpen(false); }} 
+                    className="w-full text-left px-4 py-3 hover:bg-surface-700 border-b border-surface-700 last:border-0 transition-colors"
+                  >
+                    {renderItem(item)}
+                  </button>
+                ))
+              ) : query.trim() && !loading ? (
+                <div className="px-4 py-6 text-center text-slate-500 text-sm">
+                  <p>No results found for "{query}"</p>
+                  <p className="text-xs mt-1">Make sure you have added this supplier in the 'Suppliers' tab first.</p>
+                </div>
+              ) : null}
             </div>
           )}
         </div>
@@ -86,7 +110,9 @@ export default function AdminProcurement() {
   const [form, setForm] = useState({});
   const [poItems, setPoItems] = useState([]); // For PO creation
   const [selectedSupplier, setSelectedSupplier] = useState(null); // For PO creation
-  const [selectedPO, setSelectedPO] = useState(null); // For receiving
+  const [selectedPO, setSelectedPO] = useState(null); // For receiving OR linking to invoice
+  const [selectedInvoicePO, setSelectedInvoicePO] = useState(null); // Specifically for Invoice creation
+  const [selectedInvoiceSupplier, setSelectedInvoiceSupplier] = useState(null); // For Invoice creation
   const [receiveData, setReceiveData] = useState([]); // Array of { itemIndex, receivedQuantity }
 
   const fetchData = useCallback(async (page = 1) => {
@@ -117,9 +143,16 @@ export default function AdminProcurement() {
         payload.items = poItems;
       }
 
+      if (tab === 'invoices') {
+        if (!selectedInvoiceSupplier) throw new Error("Supplier is required");
+        payload.supplier = selectedInvoiceSupplier._id;
+        if (selectedInvoicePO) payload.purchaseOrder = selectedInvoicePO._id;
+      }
+
       await api.post(`/${endpoint}`, payload);
       toast.success('Created successfully');
       setShowModal(false); setForm({}); setPoItems([]); setSelectedSupplier(null);
+      setSelectedInvoiceSupplier(null); setSelectedInvoicePO(null);
       fetchData(pagination.page);
     } catch (err) {
       toast.error(err.message || 'Failed to create');
@@ -319,11 +352,47 @@ export default function AdminProcurement() {
       </div>
     );
     if (tab === 'invoices') return (
-      <div className="grid grid-cols-2 gap-4">
-        <Input label="Invoice Number *" value={form.invoiceNumber || ''} onChange={e => setForm(f => ({ ...f, invoiceNumber: e.target.value }))} required />
-        <Input label="Internal Supplier ID *" value={form.supplier || ''} onChange={e => setForm(f => ({ ...f, supplier: e.target.value }))} required placeholder="Mongo ID" />
-        <Input label="Invoice Date *" type="date" value={form.invoiceDate || ''} onChange={e => setForm(f => ({ ...f, invoiceDate: e.target.value }))} required />
-        <Input label="Subtotal *" type="number" value={form.subtotal || ''} onChange={e => setForm(f => ({ ...f, subtotal: parseFloat(e.target.value), totalAmount: parseFloat(e.target.value) }))} required />
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="col-span-2">
+            <label className="label">Select Supplier *</label>
+            <SearchSelect 
+              placeholder="Search by vendor name..." 
+              onSearch={async (q) => (await api.get(`/procurement/suppliers?search=${q}`)).data}
+              selected={selectedInvoiceSupplier}
+              onSelect={setSelectedInvoiceSupplier}
+              renderItem={(s) => <div className="text-white font-medium">{s.name} <span className="text-xs text-slate-500 font-mono ml-2">{s.code}</span></div>}
+              renderSelected={(s) => <div className="text-emerald-300 font-bold flex items-center gap-2"><Truck className="w-4 h-4"/> {s.name}</div>}
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="label">Link Purchase Order (Optional)</label>
+            <SearchSelect 
+              placeholder="Search PO Number..." 
+              onSearch={async (q) => (await api.get(`/procurement/purchase-orders?status=sent&search=${q}`)).data}
+              selected={selectedInvoicePO}
+              onSelect={(po) => {
+                setSelectedInvoicePO(po);
+                if (po) {
+                  setForm(f => ({ ...f, subtotal: po.subtotal, tax: po.tax, discount: po.discount, totalAmount: po.totalAmount }));
+                  if (!selectedInvoiceSupplier) setSelectedInvoiceSupplier(po.supplier);
+                }
+              }}
+              renderItem={(po) => <div className="text-white font-medium">{po.poNumber} <span className="text-xs text-slate-500 font-mono ml-2">{formatCurrency(po.totalAmount)}</span></div>}
+              renderSelected={(po) => <div className="text-violet-300 font-bold flex items-center gap-2"><FileText className="w-4 h-4"/> {po.poNumber}</div>}
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <Input label="Invoice Number *" value={form.invoiceNumber || ''} onChange={e => setForm(f => ({ ...f, invoiceNumber: e.target.value }))} required placeholder="e.g. INV-1002" />
+          <Input label="Invoice Date *" type="date" value={form.invoiceDate || ''} onChange={e => setForm(f => ({ ...f, invoiceDate: e.target.value }))} required />
+          <Input label="Subtotal ₹ *" type="number" value={form.subtotal || ''} onChange={e => setForm(f => ({ ...f, subtotal: parseFloat(e.target.value), totalAmount: parseFloat(e.target.value) + (f.tax || 0) - (f.discount || 0) }))} required />
+          <Input label="Total Amount ₹ *" type="number" value={form.totalAmount || ''} readOnly className="bg-surface-800 font-bold text-emerald-400" />
+        </div>
+        <div className="flex gap-4">
+           <Input label="Tax ₹" type="number" value={form.tax || ''} onChange={e => { const t = parseFloat(e.target.value)||0; setForm(f => ({ ...f, tax: t, totalAmount: (f.subtotal||0) + t - (f.discount||0) }))}} containerClassName="flex-1" />
+           <Input label="Discount ₹" type="number" value={form.discount || ''} onChange={e => { const d = parseFloat(e.target.value)||0; setForm(f => ({ ...f, discount: d, totalAmount: (f.subtotal||0) + (f.tax||0) - d }))}} containerClassName="flex-1" />
+        </div>
       </div>
     );
   };

@@ -52,10 +52,16 @@ const getPurchaseOrders = asyncHandler(async (req, res) => {
 });
 
 const createPurchaseOrder = asyncHandler(async (req, res) => {
+  const { supplier: supplierId, items } = req.body;
+
+  // Validate supplier
+  const supplier = await Supplier.findById(supplierId);
+  if (!supplier) return ApiResponse.badRequest(res, 'Invalid supplier selected');
+
   const count = await PurchaseOrder.countDocuments();
   const poNumber = `PO-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
 
-  const subtotal = req.body.items.reduce((sum, item) => sum + item.totalPrice, 0);
+  const subtotal = items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
   const tax = req.body.tax || 0;
   const discount = req.body.discount || 0;
 
@@ -131,6 +137,18 @@ const getInvoices = asyncHandler(async (req, res) => {
 });
 
 const createInvoice = asyncHandler(async (req, res) => {
+  const { supplier: supplierId, purchaseOrder: poId } = req.body;
+
+  // Validate supplier
+  const supplier = await Supplier.findById(supplierId);
+  if (!supplier) return ApiResponse.badRequest(res, 'Invalid supplier selected');
+
+  // Validate PO if provided
+  if (poId) {
+    const po = await PurchaseOrder.findById(poId);
+    if (!po) return ApiResponse.badRequest(res, 'Invalid Purchase Order linked');
+  }
+
   const invoiceData = { ...req.body, createdBy: req.user._id };
   if (req.file) {
     invoiceData.pdfUrl = req.file.path;

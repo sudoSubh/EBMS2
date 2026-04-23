@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 // Removed 3D Card components to disable hover movement
 import { SparklesCore } from '../../components/ui/sparkles';
 import { Globe } from '../../components/ui/globe';
-import { WavyBackground } from '../../components/ui/wavy-background';
+import { Spotlight } from '../../components/ui/spotlight';
 import { Button as MovingBorderButton } from '../../components/ui/moving-border';
 
 export default function AdminLogin() {
@@ -35,15 +35,8 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
       {/* Background Effects */}
-      <div className="absolute inset-0 w-full h-full">
-        <WavyBackground 
-          colors={["#38bdf8", "#818cf8", "#c084fc", "#e879f9", "#22d3ee"]}
-          waveWidth={50}
-          backgroundFill="black"
-          blur={10}
-          className="w-full h-full opacity-40"
-        />
-      </div>
+      <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="white" />
+      <Spotlight className="top-20 left-80" fill="blue" />
 
       {/* Sparkles Effect */}
       <div className="w-full absolute inset-0 h-screen pointer-events-none">
@@ -59,7 +52,7 @@ export default function AdminLogin() {
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center relative z-10 px-4">
-        
+
         {/* Massive Floating Title */}
         <motion.div
           initial={{ opacity: 0, y: -50 }}
@@ -77,7 +70,7 @@ export default function AdminLogin() {
 
         <div className="inter-var w-full flex justify-center z-20">
           <div className="bg-[#0c0c12]/90 backdrop-blur-2xl relative group/card border border-white/10 shadow-[0_20px_80px_rgba(99,102,241,0.3)] w-auto sm:w-[500px] h-auto rounded-[2rem] p-10 flex flex-col items-center mt-[-20px]">
-            
+
             <div
               className="text-xl font-bold text-neutral-600 dark:text-white"
             >
