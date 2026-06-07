@@ -29,6 +29,7 @@
     "@supabase/supabase-js": "^2.104.0",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.6",
+    "csv-parser": "^3.2.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.3.2",

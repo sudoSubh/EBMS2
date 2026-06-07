@@ -11,7 +11,12 @@ import { TableSkeleton } from '../../components/ui/LoadingSpinner';
 import { formatDate, truncate, debounce } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
-const CATEGORIES = ['Fiction', 'Science', 'Technology', 'History', 'Philosophy', 'Mathematics', 'Literature', 'Business', 'Art', 'Medicine', 'Law', 'Education'];
+const CATEGORIES = [
+  'Fiction & Literature', 'Science & Nature', 'Technology & CS', 'History', 
+  'Business & Economics', 'Philosophy & Psychology', 'Art & Design', 
+  'Medicine & Health', 'Travel & Geography', 'Literary Criticism', 
+  'American literature', 'Other'
+];
 
 const rowVariants = {
   hidden: { opacity: 0, x: -10 },

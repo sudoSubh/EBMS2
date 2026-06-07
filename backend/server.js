@@ -81,19 +81,22 @@ app.use(notFound);
 app.use(errorHandler);
 
 // Cron Jobs
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   require('./src/jobs/cronJobs');
 }
 
-const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
-  logger.info(`🚀 EBMS Server running on port ${PORT} [${process.env.NODE_ENV}]`);
-});
+let server;
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+  server = app.listen(PORT, () => {
+    logger.info(`🚀 EBMS Server running on port ${PORT} [${process.env.NODE_ENV}]`);
+  });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received. Shutting down gracefully...');
-  server.close(() => process.exit(0));
-});
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    logger.info('SIGTERM received. Shutting down gracefully...');
+    server.close(() => process.exit(0));
+  });
+}
 
 module.exports = app;

@@ -9,7 +9,12 @@ import toast from 'react-hot-toast';
 import { CardContainer, CardBody, CardItem } from '../../components/ui/3d-card';
 import { WavyBackground } from '../../components/ui/wavy-background';
 
-const CATEGORIES = ['Fiction', 'Science', 'Technology', 'History', 'Philosophy', 'Mathematics', 'Literature', 'Business'];
+const CATEGORIES = [
+  'Fiction & Literature', 'Science & Nature', 'Technology & CS', 'History', 
+  'Business & Economics', 'Philosophy & Psychology', 'Art & Design', 
+  'Medicine & Health', 'Travel & Geography', 'Literary Criticism', 
+  'American literature', 'Other'
+];
 
 export default function StudentBooks() {
   const [books, setBooks] = useState([]);
